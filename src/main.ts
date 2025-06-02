@@ -7,8 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const document = YAML.load('doc/api.yaml');
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('doc', app, document);
 
-  await app.listen(process.env.PORT || 5000);
+  await app.listen(process.env.PORT || 4000);
 }
 bootstrap();
