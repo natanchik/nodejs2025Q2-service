@@ -27,13 +27,13 @@ export class UserService {
     }
   }
 
-  CreateUserDto(CreateUserDto: CreateUserDto) {
-    if ('login' in UpdatePasswordDto && 'password' in UpdatePasswordDto) {
+  createUser(createUserDto: CreateUserDto) {
+    if ('login' in createUserDto && 'password' in createUserDto) {
       const id = uuidv4();
       users[id] = {
         id: id,
-        login: CreateUserDto.login,
-        password: CreateUserDto.password,
+        login: createUserDto.login,
+        password: createUserDto.password,
         version: 1,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -50,15 +50,15 @@ export class UserService {
     }
   }
 
-  UpdatePasswordDto(UpdatePasswordDto: UpdatePasswordDto, id: string) {
+  updatePassword(updatePasswordDto: UpdatePasswordDto, id: string) {
     if (
-      'oldPassword' in UpdatePasswordDto &&
-      'newPassword' in UpdatePasswordDto
+      'oldPassword' in updatePasswordDto &&
+      'newPassword' in updatePasswordDto
     ) {
       if (uuidValidate(id)) {
         if (id in users) {
-          if ((users[id].password = UpdatePasswordDto.oldPassword)) {
-            users[id].password = UpdatePasswordDto.newPassword;
+          if ((users[id].password = updatePasswordDto.oldPassword)) {
+            users[id].password = updatePasswordDto.newPassword;
             users[id].version = ++users[id].version;
             users[id].updatedAt = Date.now();
           }
@@ -80,7 +80,7 @@ export class UserService {
     }
   }
 
-  DeleteUserById(id: string) {
+  deleteUserById(id: string) {
     if (uuidValidate(id)) {
       if (id in users) {
         delete users[id];

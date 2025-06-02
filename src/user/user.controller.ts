@@ -15,35 +15,35 @@ import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly UserService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   getUsers() {
-    return this.UserService.getUsers();
+    return this.userService.getUsers();
   }
 
   @Get(':id')
   getUserById(@Param('id') id: string) {
-    return this.UserService.getUserById(id);
+    return this.userService.getUserById(id);
   }
 
   @Post()
-  CreateUserDto(@Body() CreateUserDto: CreateUserDto) {
-    return this.UserService.CreateUserDto(CreateUserDto);
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createUser(createUserDto);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  UpdatePasswordDto(
+  updatePassword(
     @Param('id') id: string,
-    @Body() UpdatePasswordDto: UpdatePasswordDto,
+    @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.UserService.UpdatePasswordDto(UpdatePasswordDto, id);
+    return this.userService.updatePassword(updatePasswordDto, id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  DeleteUserById(@Param('id') id: string) {
-    return this.UserService.DeleteUserById(id);
+  deleteUserById(@Param('id') id: string) {
+    return this.userService.deleteUserById(id);
   }
 }
