@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Body,
   Patch,
@@ -16,6 +18,7 @@ export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createArtistDto: CreateArtistDto) {
     return this.artistService.create(createArtistDto);
   }
@@ -36,6 +39,7 @@ export class ArtistController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.artistService.remove(id);
   }
