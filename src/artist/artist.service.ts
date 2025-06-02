@@ -8,6 +8,7 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { artists } from './entities/artist.entity';
 import { albums } from '../album/entities/album.entity';
 import { favs } from '../favs/entities/fav.entity';
+import { tracks } from '../track/entities/track.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 @Injectable()
@@ -81,6 +82,12 @@ export class ArtistService {
           const album = albums[albumId];
           if (album.artistId === id) {
             album.artistId = null;
+          }
+        });
+        Object.keys(tracks).forEach((trackId) => {
+          const track = tracks[trackId];
+          if (track.artistId === id) {
+            track.artistId = null;
           }
         });
         const index = favs.artists.indexOf(id);
