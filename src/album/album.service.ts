@@ -6,6 +6,8 @@ import {
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { albums } from './entities/album.entity';
+import { tracks } from '../track/entities/track.entity';
+import { favs } from '../favs/entities/fav.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 @Injectable()
@@ -77,6 +79,16 @@ export class AlbumService {
     if (uuidValidate(id)) {
       if (id in albums) {
         delete albums[id];
+        Object.keys(tracks).forEach((trackId) => {
+          const track = tracks[trackId];
+          if (track.albumId === id) {
+            track.albumId = null;
+          }
+        });
+        const index = favs.albums.indexOf(id);
+        if (index !== -1) {
+          favs.albums.splice(index, 1);
+        }
       } else {
         throw new NotFoundException('Album is not found');
       }
