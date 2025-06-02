@@ -57,7 +57,7 @@ export class UserService {
     ) {
       if (uuidValidate(id)) {
         if (id in users) {
-          if ((users[id].password = updatePasswordDto.oldPassword)) {
+          if (users[id].password === updatePasswordDto.oldPassword) {
             users[id].password = updatePasswordDto.newPassword;
             users[id].version = ++users[id].version;
             users[id].updatedAt = Date.now();
