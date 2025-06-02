@@ -46,14 +46,14 @@ export class ArtistService {
   }
 
   update(id: string, updateArtistDto: UpdateArtistDto) {
-    if (
-      'name' in updateArtistDto &&
-      updateArtistDto.name &&
-      'grammy' in updateArtistDto &&
-      typeof updateArtistDto.grammy === 'boolean'
-    ) {
-      if (uuidValidate(id)) {
-        if (id in artists) {
+    if (uuidValidate(id)) {
+      if (id in artists) {
+        if (
+          'name' in updateArtistDto &&
+          updateArtistDto.name &&
+          'grammy' in updateArtistDto &&
+          typeof updateArtistDto.grammy === 'boolean'
+        ) {
           artists[id] = {
             id: id,
             name: updateArtistDto.name,
@@ -61,13 +61,13 @@ export class ArtistService {
           };
           return artists[id];
         } else {
-          throw new NotFoundException('Artist is not found');
+          throw new BadRequestException('Request is not correct');
         }
       } else {
-        throw new BadRequestException('Artist id is not correct');
+        throw new NotFoundException('Artist is not found');
       }
     } else {
-      throw new BadRequestException('Request is not correct');
+      throw new BadRequestException('Artist id is not correct');
     }
   }
 
