@@ -48,25 +48,26 @@ export class TrackService {
   }
 
   update(id: string, updateTrackDto: UpdateTrackDto) {
-    if (
-      'name' in updateTrackDto &&
-      updateTrackDto.name &&
-      'duration' in updateTrackDto &&
-      typeof updateTrackDto.duration === 'number'
-    ) {
-      if (uuidValidate(id)) {
-        if (id in tracks) {
+    if (uuidValidate(id)) {
+      if (id in tracks) {
+        if (
+          'name' in updateTrackDto &&
+          updateTrackDto.name &&
+          'duration' in updateTrackDto &&
+          typeof updateTrackDto.duration === 'number'
+        ) {
           Object.keys(updateTrackDto).forEach((key) => {
-            tracks[key] = updateTrackDto[key];
+            tracks[id][key] = updateTrackDto[key];
           });
+          return tracks[id];
         } else {
-          throw new NotFoundException('Track is not found');
+          throw new BadRequestException('Request is not correct');
         }
       } else {
-        throw new BadRequestException('Track id is not correct');
+        throw new NotFoundException('Track is not found');
       }
     } else {
-      throw new BadRequestException('Request is not correct');
+      throw new BadRequestException('Track id is not correct');
     }
   }
 
