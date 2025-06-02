@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Body,
   Patch,
@@ -16,6 +18,7 @@ export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createTrackDto: CreateTrackDto) {
     return this.trackService.create(createTrackDto);
   }
@@ -36,6 +39,7 @@ export class TrackController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.trackService.remove(id);
   }
