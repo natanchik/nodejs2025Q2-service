@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Body,
   Patch,
@@ -16,6 +18,7 @@ export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createAlbumDto: CreateAlbumDto) {
     return this.albumService.create(createAlbumDto);
   }
@@ -36,6 +39,7 @@ export class AlbumController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.albumService.remove(id);
   }

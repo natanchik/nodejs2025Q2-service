@@ -47,14 +47,14 @@ export class AlbumService {
   }
 
   update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    if (
-      'name' in updateAlbumDto &&
-      updateAlbumDto.name &&
-      'year' in updateAlbumDto &&
-      typeof updateAlbumDto.year === 'number'
-    ) {
-      if (uuidValidate(id)) {
-        if (id in albums) {
+    if (uuidValidate(id)) {
+      if (id in albums) {
+        if (
+          'name' in updateAlbumDto &&
+          updateAlbumDto.name &&
+          'year' in updateAlbumDto &&
+          typeof updateAlbumDto.year === 'number'
+        ) {
           albums[id] = {
             id: id,
             name: updateAlbumDto.name,
@@ -63,13 +63,13 @@ export class AlbumService {
           };
           return albums[id];
         } else {
-          throw new NotFoundException('Album is not found');
+          throw new BadRequestException('Request is not correct');
         }
       } else {
-        throw new BadRequestException('Album id is not correct');
+        throw new NotFoundException('Album is not found');
       }
     } else {
-      throw new BadRequestException('Request is not correct');
+      throw new BadRequestException('Album id is not correct');
     }
   }
 
