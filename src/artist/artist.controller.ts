@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -33,7 +33,7 @@ export class ArtistController {
     return this.artistService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
     return this.artistService.update(id, updateArtistDto);
   }

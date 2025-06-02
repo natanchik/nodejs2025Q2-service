@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -33,7 +33,7 @@ export class TrackController {
     return this.trackService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
     return this.trackService.update(id, updateTrackDto);
   }
