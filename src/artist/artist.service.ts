@@ -6,6 +6,8 @@ import {
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { artists } from './entities/artist.entity';
+import { albums } from '../album/entities/album.entity';
+import { favs } from '../favs/entities/fav.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 @Injectable()
@@ -75,6 +77,16 @@ export class ArtistService {
     if (uuidValidate(id)) {
       if (id in artists) {
         delete artists[id];
+        Object.keys(albums).forEach((albumId) => {
+          const album = albums[albumId];
+          if (album.artistId === id) {
+            album.artistId = null;
+          }
+        });
+        const index = favs.artists.indexOf(id);
+        if (index !== -1) {
+          favs.artists.splice(index, 1);
+        }
       } else {
         throw new NotFoundException('Artist is not found');
       }
