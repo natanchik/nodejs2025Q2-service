@@ -28,7 +28,12 @@ export class UserService {
   }
 
   createUser(createUserDto: CreateUserDto) {
-    if ('login' in createUserDto && 'password' in createUserDto) {
+    if (
+      'login' in createUserDto &&
+      'password' in createUserDto &&
+      createUserDto.login &&
+      createUserDto.password
+    ) {
       const id = uuidv4();
       users[id] = {
         id: id,
