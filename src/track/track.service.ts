@@ -6,6 +6,7 @@ import {
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { tracks } from './entities/track.entity';
+import { favs } from '../favs/entities/fav.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 @Injectable()
@@ -75,6 +76,10 @@ export class TrackService {
     if (uuidValidate(id)) {
       if (id in tracks) {
         delete tracks[id];
+        const index = favs.tracks.indexOf(id);
+        if (index !== -1) {
+          favs.tracks.splice(index, 1);
+        }
       } else {
         throw new NotFoundException('Track is not found');
       }
