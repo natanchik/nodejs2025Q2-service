@@ -1,11 +1,21 @@
-export class Fav {
-  artists: string[] = []; // favorite artists ids
-  albums: string[] = []; // favorite albums ids
-  tracks: string[] = []; // favorite tracks ids
+import { Entity, ManyToMany, JoinTable } from 'typeorm';
+import { Artist } from '../../artist/entities/artist.entity';
+import { Album } from '../../album/entities/album.entity';
+import { Track } from '../../track/entities/track.entity';
+
+@Entity()
+export class Favorites {
+  @ManyToMany(() => Artist)
+  @JoinTable()
+  artists: Artist[];
+
+  @ManyToMany(() => Album)
+  @JoinTable()
+  albums: Album[];
+
+  @ManyToMany(() => Track)
+  @JoinTable()
+  tracks: Track[];
 }
 
-export const favs: Fav = {
-  artists: [],
-  albums: [],
-  tracks: [],
-};
+export const favs: { [id: string]: Favorites } = {};
