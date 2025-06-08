@@ -1,72 +1,235 @@
-# Home Library Service
+# 🎵 Home Library Service
 
-## Prerequisites
+**Home Library Service** is a REST API for managing users, artists, tracks, albums, and favorites. This project is implemented using **Nest.js**, **TypeORM**, and **PostgreSQL** as the database. The project is containerized using **Docker** for seamless deployment in a multi-container environment.
 
-- Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+---
 
-## Downloading
+## 📑 Features
 
-```
-git clone {repository URL}
-```
+The API allows you to:
 
-## Installing NPM modules
+- Manage users: create, read, update, and delete.
+- Manage artists, tracks, and albums.
+- Add/remove items (artists, tracks, albums) to/from favorites.
 
-```
-npm install
-```
+---
 
-## Running application
+## 🚀 Technologies Used
 
-```
-npm start
-```
+- **Node.js** (v22.x.x)
+- **Nest.js**: Framework for building REST APIs.
+- **PostgreSQL**: Relational database for data storage.
+- **TypeORM**: ORM for database interactions.
+- **Docker**: Containerization for simplified deployment.
+- **docker-compose**: For defining multi-container environments.
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+---
 
-## Testing
-
-After application running open new terminal and enter:
-
-To run all tests without authorization
+## 📂 Project Structure
 
 ```
-npm run test
+src/
+├── album/         # Module for albums
+├── artist/        # Module for artists
+├── track/         # Module for tracks
+├── user/          # Module for users
+├── favs/          # Module for managing favorites
+├── migrations/    # Directory for database migrations
+└── app.module.ts  # Main application module
 ```
 
-To run only one of all test suites
+---
 
+## ⚙️ Installation and Setup
+
+### 📋 Prerequisites
+
+Ensure you have the following installed:
+
+- **Node.js** (version 22.x.x or later)
+- **npm** (Node.js package manager)
+- **Docker** and **Docker Compose**
+
+### 📥 Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/natanchik/nodejs2025Q2-service.git
+   cd nodejs2025Q2-service
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` according to `.env.example` file.
+
+---
+
+### 🐳 Running with Docker
+
+1. Build and start the containers:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+2. The application will be available at:
+
+   ```
+   http://localhost:4000
+   ```
+
+3. To connect to the database, you can use the following settings:
+
+   ```
+   Host: localhost
+   Port: 5432
+   User: user
+   Password: password
+   Database: homelibrary
+   ```
+
+4. To stop the containers:
+   ```bash
+   docker-compose down
+   ```
+
+---
+
+### 🚧 Manual Start
+
+1. Apply database migrations:
+
+   ```bash
+   npm run migration:run
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm run start
+   ```
+
+3. Open the application at:
+   ```
+   http://localhost:4000
+   ```
+
+---
+
+## 📦 Docker Hub
+
+The Docker image for this application is available on Docker Hub:
+
+- [Docker Hub Image](https://hub.docker.com/r/natanchik/nodejs2025q2-service)
+
+---
+
+## 🔒 Security Scan for Docker Images
+
+To scan the built Docker image for vulnerabilities, run:
+
+```bash
+docker scan natanchik/nodejs2025Q2-service:latest
 ```
-npm run test -- <path to suite>
-```
 
-To run all test with authorization
+---
 
-```
-npm run test:auth
-```
+## 🧪 Testing
 
-To run only specific test suite with authorization
+1. Run the following command:
 
-```
-npm run test:auth -- <path to suite>
-```
+   ```bash
+   npm run test
+   ```
 
-### Auto-fix and format
+2. A coverage summary:
 
-```
-npm run lint
-```
+   ```bash
+   npm run test:cov
+   ```
 
-```
-npm run format
-```
+---
 
-### Debugging in VSCode
+## 📏 Linting and Formatting
 
-Press <kbd>F5</kbd> to debug.
+1. Check for linting issues:
 
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+   ```bash
+   npm run lint
+   ```
+
+2. Format your code using Prettier:
+   ```bash
+   npm run format
+   ```
+
+---
+
+## 📜 API Endpoints
+
+### Users (`/user`)
+
+| Method | URL         | Description            |
+| ------ | ----------- | ---------------------- |
+| GET    | `/user`     | Retrieve all users     |
+| GET    | `/user/:id` | Retrieve a user by ID  |
+| POST   | `/user`     | Create a new user      |
+| PUT    | `/user/:id` | Update user's password |
+| DELETE | `/user/:id` | Delete a user          |
+
+---
+
+### Artists (`/artist`)
+
+| Method | URL           | Description              |
+| ------ | ------------- | ------------------------ |
+| GET    | `/artist`     | Retrieve all artists     |
+| GET    | `/artist/:id` | Retrieve an artist by ID |
+| POST   | `/artist`     | Create a new artist      |
+| PUT    | `/artist/:id` | Update an artist         |
+| DELETE | `/artist/:id` | Delete an artist         |
+
+---
+
+### Tracks (`/track`)
+
+| Method | URL          | Description            |
+| ------ | ------------ | ---------------------- |
+| GET    | `/track`     | Retrieve all tracks    |
+| GET    | `/track/:id` | Retrieve a track by ID |
+| POST   | `/track`     | Create a new track     |
+| PUT    | `/track/:id` | Update a track         |
+| DELETE | `/track/:id` | Delete a track         |
+
+---
+
+### Albums (`/album`)
+
+| Method | URL          | Description             |
+| ------ | ------------ | ----------------------- |
+| GET    | `/album`     | Retrieve all albums     |
+| GET    | `/album/:id` | Retrieve an album by ID |
+| POST   | `/album`     | Create a new album      |
+| PUT    | `/album/:id` | Update an album         |
+| DELETE | `/album/:id` | Delete an album         |
+
+---
+
+### Favorites (`/favs`)
+
+| Method | URL                | Description                     |
+| ------ | ------------------ | ------------------------------- |
+| GET    | `/favs`            | Retrieve all favorites          |
+| POST   | `/favs/artist/:id` | Add an artist to favorites      |
+| DELETE | `/favs/artist/:id` | Remove an artist from favorites |
+| POST   | `/favs/album/:id`  | Add an album to favorites       |
+| DELETE | `/favs/album/:id`  | Remove an album from favorites  |
+| POST   | `/favs/track/:id`  | Add a track to favorites        |
+| DELETE | `/favs/track/:id`  | Remove a track from favorites   |
+
+---
