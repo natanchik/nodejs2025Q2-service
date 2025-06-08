@@ -11,5 +11,3 @@ export class Artist {
   @Column()
   grammy: boolean;
 }
-
-export const artists: { [id: string]: Artist } = {};

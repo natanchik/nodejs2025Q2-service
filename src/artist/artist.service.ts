@@ -5,15 +5,28 @@ import {
 } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
-import { artists } from './entities/artist.entity';
-import { albums } from '../album/entities/album.entity';
-import { favs } from '../favs/entities/fav.entity';
-import { tracks } from '../track/entities/track.entity';
+import { Artist } from './entities/artist.entity';
+import { Album } from '../album/entities/album.entity';
+import { Favorites } from '../favs/entities/fav.entity';
+import { Track } from '../track/entities/track.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ArtistService {
-  create(createArtistDto: CreateArtistDto) {
+  constructor(
+    @InjectRepository(Artist)
+    private artistRepository: Repository<Artist>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+  ) {}
+
+  create(createArtistDto: CreateArtistDto): Promise<Artist> {
     if (
       'name' in createArtistDto &&
       createArtistDto.name &&
@@ -21,82 +34,82 @@ export class ArtistService {
       typeof createArtistDto.grammy === 'boolean'
     ) {
       const id = uuidv4();
-      artists[id] = {
-        id: id,
+      const newArtist = this.artistRepository.create({
+        id,
         name: createArtistDto.name,
         grammy: createArtistDto.grammy,
-      };
-      return artists[id];
+      });
+      return this.artistRepository.save(newArtist);
     } else {
       throw new BadRequestException('Request is not correct');
     }
   }
 
-  findAll() {
-    return Object.values(artists);
+  findAll(): Promise<Artist[]> {
+    return this.artistRepository.find();
   }
 
-  findOne(id: string) {
+  findOne(id: string): Promise<Artist> {
     if (uuidValidate(id)) {
-      if (id in artists) {
-        return artists[id];
-      } else {
+      return this.artistRepository.findOne({ where: { id } }).then((artist) => {
+        if (!artist) {
+          throw new NotFoundException('Artist is not found');
+        }
+        return artist;
+      });
+    } else {
+      throw new BadRequestException('Artist id is not correct');
+    }
+  }
+
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
+    if (uuidValidate(id)) {
+      const artist = await this.artistRepository.findOne({ where: { id } });
+      if (!artist) {
         throw new NotFoundException('Artist is not found');
+      }
+      if (
+        'name' in updateArtistDto &&
+        updateArtistDto.name &&
+        'grammy' in updateArtistDto &&
+        typeof updateArtistDto.grammy === 'boolean'
+      ) {
+        await this.artistRepository.update(id, updateArtistDto);
+        return this.artistRepository.findOne({ where: { id } });
+      } else {
+        throw new BadRequestException('Request is not correct');
       }
     } else {
       throw new BadRequestException('Artist id is not correct');
     }
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto) {
+  async remove(id: string): Promise<void> {
     if (uuidValidate(id)) {
-      if (id in artists) {
-        if (
-          'name' in updateArtistDto &&
-          updateArtistDto.name &&
-          'grammy' in updateArtistDto &&
-          typeof updateArtistDto.grammy === 'boolean'
-        ) {
-          artists[id] = {
-            id: id,
-            name: updateArtistDto.name,
-            grammy: updateArtistDto.grammy,
-          };
-          return artists[id];
-        } else {
-          throw new BadRequestException('Request is not correct');
-        }
-      } else {
+      const artist = await this.artistRepository.findOne({ where: { id } });
+      if (!artist) {
         throw new NotFoundException('Artist is not found');
       }
-    } else {
-      throw new BadRequestException('Artist id is not correct');
-    }
-  }
-
-  remove(id: string) {
-    if (uuidValidate(id)) {
-      if (id in artists) {
-        delete artists[id];
-        Object.keys(albums).forEach((albumId) => {
-          const album = albums[albumId];
-          if (album.artistId === id) {
-            album.artistId = null;
-          }
-        });
-        Object.keys(tracks).forEach((trackId) => {
-          const track = tracks[trackId];
-          if (track.artistId === id) {
-            track.artistId = null;
-          }
-        });
-        const index = favs.artists.indexOf(id);
-        if (index !== -1) {
-          favs.artists.splice(index, 1);
-        }
-      } else {
-        throw new NotFoundException('Artist is not found');
+      await this.artistRepository.delete(id);
+      const favorites = await this.favoritesRepository.findOne({});
+      if (favorites) {
+        favorites.artists = favorites.artists.filter(
+          (artist) => artist.id !== id,
+        );
+        await this.favoritesRepository.save(favorites);
       }
+      await this.albumRepository
+        .createQueryBuilder()
+        .update(Album)
+        .set({ artistId: null })
+        .where('artistId = :id', { id })
+        .execute();
+      await this.trackRepository
+        .createQueryBuilder()
+        .update(Track)
+        .set({ artistId: null })
+        .where('artistId = :id', { id })
+        .execute();
     } else {
       throw new BadRequestException('Artist id is not correct');
     }

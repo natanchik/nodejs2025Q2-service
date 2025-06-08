@@ -17,5 +17,3 @@ export class Favorites {
   @JoinTable()
   tracks: Track[];
 }
-
-export const favs: { [id: string]: Favorites } = {};

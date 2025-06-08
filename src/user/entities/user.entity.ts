@@ -20,5 +20,3 @@ export class User {
   @Column({ type: 'bigint', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: number;
 }
-
-export const users: { [id: string]: User } = {};

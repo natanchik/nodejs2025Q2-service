@@ -5,13 +5,22 @@ import {
 } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { tracks } from './entities/track.entity';
-import { favs } from '../favs/entities/fav.entity';
+import { Track } from './entities/track.entity';
+import { Favorites } from '../favs/entities/fav.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TrackService {
-  create(createTrackDto: CreateTrackDto) {
+  constructor(
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+  ) {}
+
+  create(createTrackDto: CreateTrackDto): Promise<Track> {
     if (
       'name' in createTrackDto &&
       createTrackDto.name &&
@@ -19,69 +28,70 @@ export class TrackService {
       typeof createTrackDto.duration === 'number'
     ) {
       const id = uuidv4();
-      tracks[id] = {
+      const newTrack = this.trackRepository.create({
         id: id,
         name: createTrackDto.name,
-        artistId: createTrackDto.artistId || null, // refers to Artist
-        albumId: createTrackDto.albumId || null, // refers to Album
-        duration: createTrackDto.duration, // integer number
-      };
-      return tracks[id];
+        artistId: createTrackDto.artistId || null,
+        albumId: createTrackDto.albumId || null,
+        duration: createTrackDto.duration,
+      });
+      return this.trackRepository.save(newTrack);
     } else {
       throw new BadRequestException('Request is not correct');
     }
   }
 
-  findAll() {
-    return Object.values(tracks);
+  findAll(): Promise<Track[]> {
+    return this.trackRepository.find();
   }
 
-  findOne(id: string) {
+  async findOne(id: string): Promise<Track> {
     if (uuidValidate(id)) {
-      if (id in tracks) {
-        return tracks[id];
-      } else {
+      const track = await this.trackRepository.findOne({ where: { id } });
+      if (!track) {
         throw new NotFoundException('Track is not found');
+      }
+      return track;
+    } else {
+      throw new BadRequestException('Track id is not correct');
+    }
+  }
+
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
+    if (uuidValidate(id)) {
+      const track = await this.trackRepository.findOne({ where: { id } });
+      if (!track) {
+        throw new NotFoundException('Track is not found');
+      }
+      if (
+        'name' in updateTrackDto &&
+        updateTrackDto.name &&
+        'duration' in updateTrackDto &&
+        typeof updateTrackDto.duration === 'number'
+      ) {
+        await this.trackRepository.update(id, updateTrackDto);
+        return this.trackRepository.findOne({ where: { id } });
+      } else {
+        throw new BadRequestException('Request is not correct');
       }
     } else {
       throw new BadRequestException('Track id is not correct');
     }
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto) {
+  async remove(id: string): Promise<void> {
     if (uuidValidate(id)) {
-      if (id in tracks) {
-        if (
-          'name' in updateTrackDto &&
-          updateTrackDto.name &&
-          'duration' in updateTrackDto &&
-          typeof updateTrackDto.duration === 'number'
-        ) {
-          Object.keys(updateTrackDto).forEach((key) => {
-            tracks[id][key] = updateTrackDto[key];
-          });
-          return tracks[id];
-        } else {
-          throw new BadRequestException('Request is not correct');
-        }
-      } else {
+      const track = await this.trackRepository.findOne({ where: { id } });
+      if (!track) {
         throw new NotFoundException('Track is not found');
       }
-    } else {
-      throw new BadRequestException('Track id is not correct');
-    }
-  }
-
-  remove(id: string) {
-    if (uuidValidate(id)) {
-      if (id in tracks) {
-        delete tracks[id];
-        const index = favs.tracks.indexOf(id);
-        if (index !== -1) {
-          favs.tracks.splice(index, 1);
-        }
-      } else {
-        throw new NotFoundException('Track is not found');
+      await this.trackRepository.delete(id);
+      const favorites = await this.favoritesRepository.findOne({
+        relations: ['tracks'],
+      });
+      if (favorites) {
+        favorites.tracks = favorites.tracks.filter((t) => t.id !== id);
+        await this.favoritesRepository.save(favorites);
       }
     } else {
       throw new BadRequestException('Track id is not correct');

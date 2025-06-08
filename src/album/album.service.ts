@@ -5,14 +5,25 @@ import {
 } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { albums } from './entities/album.entity';
-import { tracks } from '../track/entities/track.entity';
-import { favs } from '../favs/entities/fav.entity';
+import { Album } from './entities/album.entity';
+import { Track } from '../track/entities/track.entity';
+import { Favorites } from '../favs/entities/fav.entity';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AlbumService {
-  create(createAlbumDto: CreateAlbumDto) {
+  constructor(
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+  ) {}
+
+  create(createAlbumDto: CreateAlbumDto): Promise<Album> {
     if (
       'name' in createAlbumDto &&
       createAlbumDto.name &&
@@ -20,78 +31,76 @@ export class AlbumService {
       typeof createAlbumDto.year === 'number'
     ) {
       const id = uuidv4();
-      albums[id] = {
-        id: id,
+      const newAlbum = this.albumRepository.create({
+        id,
         name: createAlbumDto.name,
         year: createAlbumDto.year,
         artistId: createAlbumDto.artistId ? createAlbumDto.artistId : null,
-      };
-      return albums[id];
+      });
+      return this.albumRepository.save(newAlbum);
     } else {
       throw new BadRequestException('Request is not correct');
     }
   }
 
-  findAll() {
-    return Object.values(albums);
+  findAll(): Promise<Album[]> {
+    return this.albumRepository.find();
   }
 
-  findOne(id: string) {
+  findOne(id: string): Promise<Album> {
     if (uuidValidate(id)) {
-      if (id in albums) {
-        return albums[id];
-      } else {
+      return this.albumRepository.findOne({ where: { id } }).then((album) => {
+        if (!album) {
+          throw new NotFoundException('Album is not found');
+        }
+        return album;
+      });
+    } else {
+      throw new BadRequestException('Album id is not correct');
+    }
+  }
+
+  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
+    if (uuidValidate(id)) {
+      const album = await this.albumRepository.findOne({ where: { id } });
+      if (!album) {
         throw new NotFoundException('Album is not found');
+      }
+      if (
+        'name' in updateAlbumDto &&
+        updateAlbumDto.name &&
+        'year' in updateAlbumDto &&
+        typeof updateAlbumDto.year === 'number'
+      ) {
+        await this.albumRepository.update(id, updateAlbumDto);
+        return this.albumRepository.findOne({ where: { id } });
+      } else {
+        throw new BadRequestException('Request is not correct');
       }
     } else {
       throw new BadRequestException('Album id is not correct');
     }
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
+  async remove(id: string): Promise<void> {
     if (uuidValidate(id)) {
-      if (id in albums) {
-        if (
-          'name' in updateAlbumDto &&
-          updateAlbumDto.name &&
-          'year' in updateAlbumDto &&
-          typeof updateAlbumDto.year === 'number'
-        ) {
-          albums[id] = {
-            id: id,
-            name: updateAlbumDto.name,
-            year: updateAlbumDto.year,
-            artistId: updateAlbumDto.artistId ? updateAlbumDto.artistId : null,
-          };
-          return albums[id];
-        } else {
-          throw new BadRequestException('Request is not correct');
-        }
-      } else {
+      const album = await this.albumRepository.findOne({ where: { id } });
+      if (!album) {
         throw new NotFoundException('Album is not found');
       }
-    } else {
-      throw new BadRequestException('Album id is not correct');
-    }
-  }
-
-  remove(id: string) {
-    if (uuidValidate(id)) {
-      if (id in albums) {
-        delete albums[id];
-        Object.keys(tracks).forEach((trackId) => {
-          const track = tracks[trackId];
-          if (track.albumId === id) {
-            track.albumId = null;
-          }
-        });
-        const index = favs.albums.indexOf(id);
-        if (index !== -1) {
-          favs.albums.splice(index, 1);
-        }
-      } else {
-        throw new NotFoundException('Album is not found');
-      }
+      await this.albumRepository.delete(id);
+      this.trackRepository
+        .createQueryBuilder()
+        .update(Track)
+        .set({ albumId: null })
+        .where('albumId = :albumId', { albumId: id })
+        .execute();
+      this.favoritesRepository
+        .createQueryBuilder()
+        .update(Favorites)
+        .set({ albums: [] })
+        .where('albums.id = :albumId', { albumId: id })
+        .execute();
     } else {
       throw new BadRequestException('Album id is not correct');
     }

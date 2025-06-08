@@ -25,5 +25,3 @@ export class Album {
   @JoinColumn({ name: 'artistId' })
   artist: Artist;
 }
-
-export const albums: { [id: string]: Album } = {};
