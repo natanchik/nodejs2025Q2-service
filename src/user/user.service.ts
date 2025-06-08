@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
-import { users } from './users';
+import { users } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-user.dto';
 
