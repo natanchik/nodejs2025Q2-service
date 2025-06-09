@@ -8,23 +8,15 @@ import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { FavsModule } from './favs/favs.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppDataSource } from './data-source';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DATABASE_HOST || 'localhost',
-      port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-      username: process.env.DATABASE_USER || 'user',
-      password: process.env.DATABASE_PASSWORD || 'password',
-      database: process.env.DATABASE_NAME || 'homelibrary',
-      autoLoadEntities: true,
-      entities: ['dist/**/*.entity{.ts,.js}'],
-      migrations: ['dist/migrations/*{.ts,.js}'],
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => AppDataSource.options,
     }),
     UserModule,
     TrackModule,
